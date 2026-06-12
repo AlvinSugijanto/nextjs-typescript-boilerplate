@@ -1,6 +1,6 @@
-import * as React from "react";
-import { useState, useMemo } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
+import * as React from "react"
+import { useState, useMemo } from "react"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Table,
   TableBody,
@@ -8,22 +8,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/select"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 import {
   ArrowDown,
   ArrowUp,
@@ -33,40 +33,40 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-} from "lucide-react";
+} from "lucide-react"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ColumnDef<T = object> {
-  key: string;
-  label: string;
-  className?: string;
-  sortable?: boolean;
-  render?: (row: T, rowIndex: number) => React.ReactNode;
+  key: string
+  label: string
+  className?: string
+  sortable?: boolean
+  render?: (row: T, rowIndex: number) => React.ReactNode
 }
 
 export interface SortConfig {
-  key: string;
-  direction: "asc" | "desc";
+  key: string
+  direction: "asc" | "desc"
 }
 
 export interface PaginationState {
-  page: number;
-  pageSize: number;
-  totalPages: number;
-  totalItems: number;
-  pageSizeOptions: number[];
-  onPageChange: (page: number) => void;
-  onPageSizeChange: (size: number) => void;
+  page: number
+  pageSize: number
+  totalPages: number
+  totalItems: number
+  pageSizeOptions: number[]
+  onPageChange: (page: number) => void
+  onPageSizeChange: (size: number) => void
 }
 
 // ─── usePagination ────────────────────────────────────────────────────────────
 
 interface UsePaginationOptions {
-  totalItems?: number;
-  initialPage?: number;
-  initialPageSize?: number;
-  pageSizeOptions?: number[];
+  totalItems?: number
+  initialPage?: number
+  initialPageSize?: number
+  pageSizeOptions?: number[]
 }
 
 export function usePagination({
@@ -75,18 +75,18 @@ export function usePagination({
   initialPageSize = 10,
   pageSizeOptions = [5, 10, 25, 50, 100],
 }: UsePaginationOptions) {
-  const [page, setPageRaw] = useState(initialPage);
-  const [pageSize, setPageSizeRaw] = useState(initialPageSize);
+  const [page, setPageRaw] = useState(initialPage)
+  const [pageSize, setPageSizeRaw] = useState(initialPageSize)
 
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
 
   const setPage = (p: number) =>
-    setPageRaw(Math.min(Math.max(1, p), totalPages));
+    setPageRaw(Math.min(Math.max(1, p), totalPages))
 
   const setPageSize = (size: number) => {
-    setPageSizeRaw(size);
-    setPageRaw(1);
-  };
+    setPageSizeRaw(size)
+    setPageRaw(1)
+  }
 
   return {
     page,
@@ -103,7 +103,7 @@ export function usePagination({
       onPageChange: setPage,
       onPageSizeChange: setPageSize,
     } satisfies PaginationState,
-  };
+  }
 }
 
 // ─── Pagination Component ─────────────────────────────────────────────────────
@@ -117,11 +117,11 @@ export function Pagination({
   onPageChange,
   onPageSizeChange,
 }: PaginationState) {
-  const from = totalItems === 0 ? 0 : (page - 1) * pageSize + 1;
-  const to = Math.min(page * pageSize, totalItems);
+  const from = totalItems === 0 ? 0 : (page - 1) * pageSize + 1
+  const to = Math.min(page * pageSize, totalItems)
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-1 py-2">
+    <div className="flex flex-col gap-3 px-1 py-2 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
         <span>
           {from}–{to} of {totalItems}
@@ -200,29 +200,29 @@ export function Pagination({
         </Button>
       </div>
     </div>
-  );
+  )
 }
 
 // ─── SimpleTable ──────────────────────────────────────────────────────────────
 
 interface SimpleTableProps<T extends object> {
-  columns: ColumnDef<T>[];
-  data: T[];
-  onClick?: (row: T) => void;
-  isLoading?: boolean;
-  paginationProps?: PaginationState;
-  defaultPageSize?: number;
-  pageSizeOptions?: number[];
-  columnProps?: Record<string, unknown>;
-  selectable?: boolean;
-  rowKey?: keyof T;
-  sortConfig?: SortConfig | null;
-  onSort?: ((columnKey: string) => void) | null;
-  selectedIds?: Set<string | number> | null;
-  onSelectPage?: (() => void) | null;
-  onSelectAll?: (() => void) | null;
-  onClearSelection?: (() => void) | null;
-  onSelectOne?: ((id: string | number, checked: boolean) => void) | null;
+  columns: ColumnDef<T>[]
+  data: T[]
+  onClick?: (row: T) => void
+  isLoading?: boolean
+  paginationProps?: PaginationState
+  defaultPageSize?: number
+  pageSizeOptions?: number[]
+  columnProps?: Record<string, unknown>
+  selectable?: boolean
+  rowKey?: keyof T
+  sortConfig?: SortConfig | null
+  onSort?: ((columnKey: string) => void) | null
+  selectedIds?: Set<string | number> | null
+  onSelectPage?: (() => void) | null
+  onSelectAll?: (() => void) | null
+  onClearSelection?: (() => void) | null
+  onSelectOne?: ((id: string | number, checked: boolean) => void) | null
 }
 
 export function SimpleTable<T extends object>({
@@ -243,38 +243,42 @@ export function SimpleTable<T extends object>({
   onClearSelection = null,
   onSelectOne = null,
 }: SimpleTableProps<T>) {
-  const isClientPaginated =
-    defaultPageSize != null && paginationProps == null;
+  const isClientPaginated = defaultPageSize != null && paginationProps == null
 
   const clientPagination = usePagination({
     totalItems: isClientPaginated ? data.length : 0,
     initialPageSize: defaultPageSize ?? 10,
     pageSizeOptions,
-  });
+  })
 
   const activePaginationProps =
     paginationProps ??
-    (isClientPaginated ? clientPagination.paginationProps : null);
+    (isClientPaginated ? clientPagination.paginationProps : null)
 
   const visibleData = useMemo(() => {
-    if (!isClientPaginated) return data;
-    const { page, pageSize } = clientPagination;
-    return data.slice((page - 1) * pageSize, page * pageSize);
-  }, [isClientPaginated, data, clientPagination.page, clientPagination.pageSize]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!isClientPaginated) return data
+    const { page, pageSize } = clientPagination
+    return data.slice((page - 1) * pageSize, page * pageSize)
+  }, [
+    isClientPaginated,
+    data,
+    clientPagination.page,
+    clientPagination.pageSize,
+  ]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const rows = isClientPaginated ? visibleData : data;
+  const rows = isClientPaginated ? visibleData : data
 
   const isRowSelected = (row: T) =>
-    selectedIds?.has(row[rowKey] as string | number) ?? false;
+    selectedIds?.has(row[rowKey] as string | number) ?? false
 
-  const totalItems = activePaginationProps?.totalItems ?? rows.length;
+  const totalItems = activePaginationProps?.totalItems ?? rows.length
   const isAllSelected =
     rows.length > 0 &&
     selectedIds != null &&
-    (selectedIds.size === rows.length || selectedIds.size === totalItems);
+    (selectedIds.size === rows.length || selectedIds.size === totalItems)
 
   return (
-    <div className="flex flex-col gap-0 rounded-md border overflow-hidden">
+    <div className="flex flex-col gap-0 overflow-hidden rounded-md border">
       <Table>
         <TableHeader className="bg-background">
           <TableRow className="border-border">
@@ -282,7 +286,7 @@ export function SimpleTable<T extends object>({
               <TableHead className="w-[70px]">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <div className="flex items-center gap-1 px-3 py-2 cursor-pointer hover:bg-muted/50 rounded-sm">
+                    <div className="flex cursor-pointer items-center gap-1 rounded-sm px-3 py-2 hover:bg-muted/50">
                       <Checkbox
                         checked={isAllSelected}
                         className="pointer-events-none"
@@ -291,7 +295,7 @@ export function SimpleTable<T extends object>({
                       <ChevronDown className="h-3 w-3 text-muted-foreground" />
                     </div>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
+                  <DropdownMenuContent align="start" className="w-fit">
                     <DropdownMenuItem onClick={onSelectPage ?? undefined}>
                       Select This Page ({rows.length})
                     </DropdownMenuItem>
@@ -313,8 +317,8 @@ export function SimpleTable<T extends object>({
               </TableHead>
             )}
             {columns.map((col) => {
-              const isSortable = col.sortable && onSort;
-              const isActiveSort = sortConfig && sortConfig.key === col.key;
+              const isSortable = col.sortable && onSort
+              const isActiveSort = sortConfig && sortConfig.key === col.key
 
               const sortIcon = !isSortable ? null : !isActiveSort ? (
                 <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />
@@ -322,7 +326,7 @@ export function SimpleTable<T extends object>({
                 <ArrowUp className="ml-1 h-3 w-3" />
               ) : (
                 <ArrowDown className="ml-1 h-3 w-3" />
-              );
+              )
 
               return (
                 <TableHead
@@ -332,16 +336,14 @@ export function SimpleTable<T extends object>({
                       ? "cursor-pointer select-none hover:bg-muted/50"
                       : ""
                   } ${col.className ?? ""}`}
-                  onClick={
-                    isSortable ? () => onSort!(col.key) : undefined
-                  }
+                  onClick={isSortable ? () => onSort!(col.key) : undefined}
                 >
                   <div className="flex items-center">
                     {col.label}
                     {sortIcon}
                   </div>
                 </TableHead>
-              );
+              )
             })}
           </TableRow>
         </TableHeader>
@@ -352,12 +354,12 @@ export function SimpleTable<T extends object>({
                 <TableRow key={i} className="border-border">
                   {selectable && (
                     <TableCell>
-                      <div className="h-4 w-4 bg-muted animate-pulse rounded mx-auto" />
+                      <div className="mx-auto h-4 w-4 animate-pulse rounded bg-muted" />
                     </TableCell>
                   )}
                   {columns.map((col) => (
                     <TableCell key={col.key}>
-                      <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                      <div className="h-4 w-24 animate-pulse rounded bg-muted" />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -367,7 +369,7 @@ export function SimpleTable<T extends object>({
             <TableRow>
               <TableCell
                 colSpan={columns.length + (selectable ? 1 : 0)}
-                className="text-center text-muted-foreground py-12"
+                className="py-12 text-center text-muted-foreground"
               >
                 No data available
               </TableCell>
@@ -405,7 +407,9 @@ export function SimpleTable<T extends object>({
                   <TableCell key={col.key} className={col.className ?? ""}>
                     {col.render
                       ? col.render(row, rowIndex)
-                      : ((row as Record<string, unknown>)[col.key] as React.ReactNode)}
+                      : ((row as Record<string, unknown>)[
+                          col.key
+                        ] as React.ReactNode)}
                   </TableCell>
                 ))}
               </TableRow>
@@ -420,5 +424,5 @@ export function SimpleTable<T extends object>({
         </div>
       )}
     </div>
-  );
+  )
 }

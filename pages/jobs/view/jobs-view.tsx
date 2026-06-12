@@ -1,33 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Briefcase,
-  Download,
-  MapPin,
-  Calendar,
-  ExternalLink,
-  Search,
-} from "lucide-react";
-import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { SearchJobsDialog } from "@/components/jobs/search-jobs-dialog";
-import { useApi } from "@/hooks/use-api";
-import { SimpleTable, usePagination } from "@/components/table/simple-table";
-import { JobsFilters } from "./components/jobs-filters";
-import { exportJobsToCSV, exportToCSV } from "@/utils/export-csv";
-import { useFilters } from "@/hooks/use-filters";
-import { useTableSelection } from "@/hooks/use-table-selection";
-import { useBoolean } from "@/hooks/use-boolean";
-import { Badge } from "@/components/ui/badge";
-import { fDate, fDateTime } from "@/utils/format-time";
-import { JOB_CONTRACT, JOB_PORTALS, JOB_TYPE } from "@/data/enums";
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, KeyRound } from "lucide-react";
-import AllJobsSecions from "./sections/all-jobs-sections";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AllJobsSections from "./sections/all-jobs-sections";
 import SessionJobsSections from "./sections/session-jobs-sections";
 

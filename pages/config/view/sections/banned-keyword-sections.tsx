@@ -1,57 +1,58 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect } from "react";
-import { Calendar, Plus, EllipsisVertical, Download } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { SimpleTable, usePagination } from "@/components/table/simple-table";
-import { fDate } from "@/utils/format-time";
-import { useApi } from "@/hooks/use-api";
-import { useFilters } from "@/hooks/use-filters";
-import { useBoolean } from "@/hooks/use-boolean";
-import { useTableSelection } from "@/hooks/use-table-selection";
-import SearchInput from "@/components/search-input";
-import DeleteDialog from "@/components/delete-dialog";
-import AddKeywordModal from "../components/add-keyword-dialog";
+import React, { useState, useEffect } from "react"
+import { Calendar, Plus, EllipsisVertical, Download } from "lucide-react"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { FloatingActionBar } from "@/components/floating-action-bar"
+import { Badge } from "@/components/ui/badge"
+import { SimpleTable, usePagination } from "@/components/table/simple-table"
+import { fDate } from "@/utils/format-time"
+import { useApi } from "@/hooks/use-api"
+import { useFilters } from "@/hooks/use-filters"
+import { useBoolean } from "@/hooks/use-boolean"
+import { useTableSelection } from "@/hooks/use-table-selection"
+import SearchInput from "@/components/search-input"
+import DeleteDialog from "@/components/delete-dialog"
+import AddKeywordModal from "../components/add-keyword-dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 interface BannedKeyword {
-  id: string | number;
-  keyword: string;
-  created_at?: string;
+  id: string | number
+  keyword: string
+  created_at?: string
 }
 
 interface PaginatedKeywords {
-  data: BannedKeyword[];
-  total: number;
+  data: BannedKeyword[]
+  total: number
 }
 
 export default function BannedKeywordsSection() {
-  const createModal = useBoolean(false);
-  const deleteModal = useBoolean(false);
-  const [selectedItem, setSelectedItem] = useState<BannedKeyword | null>(null);
+  const createModal = useBoolean(false)
+  const deleteModal = useBoolean(false)
+  const [selectedItem, setSelectedItem] = useState<BannedKeyword | null>(null)
 
-  const { data: keywords, call, loading } = useApi<PaginatedKeywords>();
-  const { call: callDelete, loading: loadingDelete } = useApi();
+  const { data: keywords, call, loading } = useApi<PaginatedKeywords>()
+  const { call: callDelete, loading: loadingDelete } = useApi()
 
   const { page, pageSize, setPage, paginationProps } = usePagination({
     totalItems: keywords?.total,
     initialPageSize: PAGE_SIZE,
-  });
+  })
 
   const { filters, setFilter, handleSort, getQueryParams } = useFilters({
     initialFilters: { q: "", sortBy: "keyword", sortOrder: "asc" },
     paramMapping: { q: "search", sortBy: "sort_by", sortOrder: "sort_order" },
     resetPage: () => setPage(1),
-  });
+  })
 
   const {
     selectedRows,
@@ -66,42 +67,42 @@ export default function BannedKeywordsSection() {
     filters,
     itemLabel: "keywords",
     getQueryParams,
-  });
+  })
 
-  const sortConfig = { key: filters.sortBy as string, direction: filters.sortOrder as "asc" | "desc" };
+  const sortConfig = {
+    key: filters.sortBy as string,
+    direction: filters.sortOrder as "asc" | "desc",
+  }
 
   const fetchKeywords = () => {
-    const params = getQueryParams({ page, perPage: pageSize });
-    call(`/api/v1/banned-keywords?${params}`);
-  };
+    const params = getQueryParams({ page, perPage: pageSize })
+    call(`/api/v1/banned-keywords?${params}`)
+  }
 
   const handleConfirmDelete = async () => {
-    if (!selectedItem?.id) return;
+    if (!selectedItem?.id) return
     try {
-      await callDelete(`/api/v1/banned-keywords/${selectedItem.id}`, "DELETE");
-      toast.success(`"${selectedItem.keyword}" deleted successfully.`);
-      deleteModal.onFalse();
-      setSelectedItem(null);
-      fetchKeywords();
+      await callDelete(`/api/v1/banned-keywords/${selectedItem.id}`, "DELETE")
+      toast.success(`"${selectedItem.keyword}" deleted successfully.`)
+      deleteModal.onFalse()
+      setSelectedItem(null)
+      fetchKeywords()
     } catch (error) {
-      const err = error as { response?: { data?: { detail?: string } }; message?: string };
+      const err = error as {
+        response?: { data?: { detail?: string } }
+        message?: string
+      }
       toast.error(
         err.response?.data?.detail ?? err.message ?? "Failed to delete keyword"
-      );
+      )
     }
-  };
+  }
 
   const columns = [
     {
       key: "keyword",
       label: "Keyword / Phrase",
-      className: "font-medium text-foreground px-4",
       sortable: true,
-      render: (row: BannedKeyword) => (
-        <Badge variant="secondary" className="px-2.5 py-1 text-sm font-medium">
-          {row.keyword}
-        </Badge>
-      ),
     },
     {
       key: "created_at",
@@ -129,9 +130,9 @@ export default function BannedKeywordsSection() {
           <DropdownMenuContent align="end">
             <DropdownMenuItem
               onClick={(e) => {
-                e.stopPropagation();
-                setSelectedItem(row);
-                createModal.onTrue();
+                e.stopPropagation()
+                setSelectedItem(row)
+                createModal.onTrue()
               }}
             >
               Edit
@@ -139,9 +140,9 @@ export default function BannedKeywordsSection() {
             <DropdownMenuItem
               className="text-destructive"
               onClick={(e) => {
-                e.stopPropagation();
-                setSelectedItem(row);
-                deleteModal.onTrue();
+                e.stopPropagation()
+                setSelectedItem(row)
+                deleteModal.onTrue()
               }}
             >
               Delete
@@ -150,32 +151,23 @@ export default function BannedKeywordsSection() {
         </DropdownMenu>
       ),
     },
-  ];
+  ]
 
   useEffect(() => {
-    fetchKeywords();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, filters]);
+    fetchKeywords()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize, filters])
 
   useEffect(() => {
-    handleClearSelection();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keywords?.data]);
+    handleClearSelection()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keywords?.data])
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between gap-4">
-        <h3 className="font-semibold self-end ml-1">Banned Keywords</h3>
+        <h3 className="ml-1 self-end font-semibold">Banned Keywords</h3>
         <div className="flex items-center gap-4">
-          {selectedRows.size > 0 && (
-            <Button
-              variant="outline"
-              onClick={() => handleExport({ filename: "banned-keywords" })}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export ({selectedRows.size})
-            </Button>
-          )}
           <SearchInput
             value={filters.q as string}
             onChange={(value) => setFilter("q", value)}
@@ -183,12 +175,11 @@ export default function BannedKeywordsSection() {
           />
           <Button
             onClick={() => {
-              setSelectedItem(null);
-              createModal.onTrue();
+              setSelectedItem(null)
+              createModal.onTrue()
             }}
-            size="sm"
           >
-            <Plus className="h-4 w-4 mr-1.5" /> Add Keyword
+            <Plus className="h-4 w-4" /> Add Keyword
           </Button>
         </div>
       </div>
@@ -212,8 +203,8 @@ export default function BannedKeywordsSection() {
         <AddKeywordModal
           open={createModal.value}
           setOpen={(value) => {
-            createModal.setValue(value);
-            if (!value) setSelectedItem(null);
+            createModal.setValue(value)
+            if (!value) setSelectedItem(null)
           }}
           selectedItem={selectedItem}
           refetch={fetchKeywords}
@@ -228,6 +219,12 @@ export default function BannedKeywordsSection() {
         onConfirm={handleConfirmDelete}
         loading={loadingDelete}
       />
+
+      <FloatingActionBar
+        selectedCount={selectedRows.size}
+        onExport={() => handleExport({ filename: "banned-keywords" })}
+        onCancel={handleClearSelection}
+      />
     </div>
-  );
+  )
 }

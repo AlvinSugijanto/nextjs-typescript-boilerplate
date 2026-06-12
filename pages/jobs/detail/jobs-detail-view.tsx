@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, use, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   ArrowLeft,
   Briefcase,
@@ -11,10 +10,7 @@ import {
   DollarSign,
   Calendar,
   ExternalLink,
-  Trash2,
-  Loader2,
 } from "lucide-react";
-import { toast } from "sonner";
 
 import {
   Card,
@@ -29,19 +25,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useApi } from "@/hooks/use-api";
 import { JobDescription } from "@/components/jobs/job-description";
-import { fDate, fDateTime } from "@/utils/format-time";
+import { fDate } from "@/utils/format-time";
+import { Job } from "@/types/jobs";
 
-export default function JobDetailView({ id }) {
+interface JobDetailResponse {
+  job: Job;
+}
+
+interface JobDetailViewProps {
+  id: string | number;
+}
+
+export default function JobDetailView({ id }: JobDetailViewProps) {
   const router = useRouter();
-  const { data, call, loading } = useApi();
+  const { data, call, loading } = useApi<JobDetailResponse>();
 
   useEffect(() => {
-    call(`/api/v1/jobs/${id}`)
-  }, []);
+    call(`/api/v1/jobs/${id}`);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
-  const job = useMemo(()=>{
-    return data?.job || null
-  },[data]) 
+  const job = useMemo(() => {
+    return data?.job || null;
+  }, [data]);
 
   if (loading) {
     return (
@@ -71,10 +77,8 @@ export default function JobDetailView({ id }) {
       {/* Back Button */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={() => router.back()}>
-          {/* <Link href="/dashboard/jobs"> */}
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Jobs
-          {/* </Link> */}
         </Button>
       </div>
 

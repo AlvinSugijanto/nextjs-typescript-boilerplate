@@ -25,14 +25,14 @@ export function useFilters<T extends FiltersState>({
   const [filters, setFiltersState] = useState<T>(() => {
     const state = {} as T;
     for (const [key, defaultValue] of Object.entries(initialFilters)) {
-      (state as FiltersState)[key] = searchParams.get(key) ?? defaultValue;
+      (state as FiltersState)[key] = searchParams?.get(key) ?? defaultValue;
     }
     return state;
   });
 
   const syncToUrl = useCallback(
     (updates: FiltersState) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams?.toString() ?? "");
       Object.entries(updates).forEach(([key, value]) => {
         if (value === null || value === undefined || value === "") {
           params.delete(key);

@@ -1,56 +1,57 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect } from "react";
-import { Calendar, Plus, EllipsisVertical, Download } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { SimpleTable, usePagination } from "@/components/table/simple-table";
-import { fDate } from "@/utils/format-time";
-import { useApi } from "@/hooks/use-api";
-import { useFilters } from "@/hooks/use-filters";
-import { useBoolean } from "@/hooks/use-boolean";
-import { useTableSelection } from "@/hooks/use-table-selection";
-import SearchInput from "@/components/search-input";
-import DeleteDialog from "@/components/delete-dialog";
-import AddCompanyModal from "../components/add-company-dialog";
+import React, { useState, useEffect } from "react"
+import { Calendar, Plus, EllipsisVertical, Download } from "lucide-react"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { FloatingActionBar } from "@/components/floating-action-bar"
+import { SimpleTable, usePagination } from "@/components/table/simple-table"
+import { fDate } from "@/utils/format-time"
+import { useApi } from "@/hooks/use-api"
+import { useFilters } from "@/hooks/use-filters"
+import { useBoolean } from "@/hooks/use-boolean"
+import { useTableSelection } from "@/hooks/use-table-selection"
+import SearchInput from "@/components/search-input"
+import DeleteDialog from "@/components/delete-dialog"
+import AddCompanyModal from "../components/add-company-dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 interface BannedCompany {
-  id: string | number;
-  name: string;
-  created_at?: string;
+  id: string | number
+  name: string
+  created_at?: string
 }
 
 interface PaginatedCompanies {
-  data: BannedCompany[];
-  total: number;
+  data: BannedCompany[]
+  total: number
 }
 
 export default function BannedCompaniesSection() {
-  const createModal = useBoolean(false);
-  const deleteModal = useBoolean(false);
-  const [selectedItem, setSelectedItem] = useState<BannedCompany | null>(null);
+  const createModal = useBoolean(false)
+  const deleteModal = useBoolean(false)
+  const [selectedItem, setSelectedItem] = useState<BannedCompany | null>(null)
 
-  const { data: companies, call, loading } = useApi<PaginatedCompanies>();
-  const { call: callDelete, loading: loadingDelete } = useApi();
+  const { data: companies, call, loading } = useApi<PaginatedCompanies>()
+  const { call: callDelete, loading: loadingDelete } = useApi()
 
   const { page, pageSize, setPage, paginationProps } = usePagination({
     totalItems: companies?.total,
     initialPageSize: PAGE_SIZE,
-  });
+  })
 
   const { filters, setFilter, handleSort, getQueryParams } = useFilters({
     initialFilters: { q: "", sortBy: "name", sortOrder: "asc" },
     paramMapping: { q: "search", sortBy: "sort_by", sortOrder: "sort_order" },
     resetPage: () => setPage(1),
-  });
+  })
 
   const {
     selectedRows,
@@ -65,30 +66,36 @@ export default function BannedCompaniesSection() {
     filters,
     itemLabel: "companies",
     getQueryParams,
-  });
+  })
 
-  const sortConfig = { key: filters.sortBy as string, direction: filters.sortOrder as "asc" | "desc" };
+  const sortConfig = {
+    key: filters.sortBy as string,
+    direction: filters.sortOrder as "asc" | "desc",
+  }
 
   const fetchCompanies = () => {
-    const params = getQueryParams({ page, perPage: pageSize });
-    call(`/api/v1/banned-companies?${params}`);
-  };
+    const params = getQueryParams({ page, perPage: pageSize })
+    call(`/api/v1/banned-companies?${params}`)
+  }
 
   const handleConfirmDelete = async () => {
-    if (!selectedItem?.id) return;
+    if (!selectedItem?.id) return
     try {
-      await callDelete(`/api/v1/banned-companies/${selectedItem.id}`, "DELETE");
-      toast.success(`"${selectedItem.name}" deleted successfully.`);
-      deleteModal.onFalse();
-      setSelectedItem(null);
-      fetchCompanies();
+      await callDelete(`/api/v1/banned-companies/${selectedItem.id}`, "DELETE")
+      toast.success(`"${selectedItem.name}" deleted successfully.`)
+      deleteModal.onFalse()
+      setSelectedItem(null)
+      fetchCompanies()
     } catch (error) {
-      const err = error as { response?: { data?: { detail?: string } }; message?: string };
+      const err = error as {
+        response?: { data?: { detail?: string } }
+        message?: string
+      }
       toast.error(
         err.response?.data?.detail ?? err.message ?? "Failed to delete company"
-      );
+      )
     }
-  };
+  }
 
   const columns = [
     {
@@ -123,9 +130,9 @@ export default function BannedCompaniesSection() {
           <DropdownMenuContent align="end">
             <DropdownMenuItem
               onClick={(e) => {
-                e.stopPropagation();
-                setSelectedItem(row);
-                createModal.onTrue();
+                e.stopPropagation()
+                setSelectedItem(row)
+                createModal.onTrue()
               }}
             >
               Edit
@@ -133,9 +140,9 @@ export default function BannedCompaniesSection() {
             <DropdownMenuItem
               className="text-destructive"
               onClick={(e) => {
-                e.stopPropagation();
-                setSelectedItem(row);
-                deleteModal.onTrue();
+                e.stopPropagation()
+                setSelectedItem(row)
+                deleteModal.onTrue()
               }}
             >
               Delete
@@ -144,32 +151,23 @@ export default function BannedCompaniesSection() {
         </DropdownMenu>
       ),
     },
-  ];
+  ]
 
   useEffect(() => {
-    fetchCompanies();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, filters]);
+    fetchCompanies()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize, filters])
 
   useEffect(() => {
-    handleClearSelection();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [companies?.data]);
+    handleClearSelection()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companies?.data])
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between gap-4">
-        <h3 className="font-semibold self-end ml-1">Banned Companies</h3>
+        <h3 className="ml-1 self-end font-semibold">Banned Companies</h3>
         <div className="flex items-center gap-4">
-          {selectedRows.size > 0 && (
-            <Button
-              variant="outline"
-              onClick={() => handleExport({ filename: "banned-companies" })}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export ({selectedRows.size})
-            </Button>
-          )}
           <SearchInput
             value={filters.q as string}
             onChange={(value) => setFilter("q", value)}
@@ -177,12 +175,12 @@ export default function BannedCompaniesSection() {
           />
           <Button
             onClick={() => {
-              setSelectedItem(null);
-              createModal.onTrue();
+              setSelectedItem(null)
+              createModal.onTrue()
             }}
-            size="sm"
+            // size="sm"
           >
-            <Plus className="h-4 w-4 mr-1.5" /> Add Company
+            <Plus className="h-4 w-4" /> Add Company
           </Button>
         </div>
       </div>
@@ -206,8 +204,8 @@ export default function BannedCompaniesSection() {
         <AddCompanyModal
           open={createModal.value}
           setOpen={(value) => {
-            createModal.setValue(value);
-            if (!value) setSelectedItem(null);
+            createModal.setValue(value)
+            if (!value) setSelectedItem(null)
           }}
           selectedItem={selectedItem}
           refetch={fetchCompanies}
@@ -222,6 +220,12 @@ export default function BannedCompaniesSection() {
         onConfirm={handleConfirmDelete}
         loading={loadingDelete}
       />
+
+      <FloatingActionBar
+        selectedCount={selectedRows.size}
+        onExport={() => handleExport({ filename: "banned-companies" })}
+        onCancel={handleClearSelection}
+      />
     </div>
-  );
+  )
 }

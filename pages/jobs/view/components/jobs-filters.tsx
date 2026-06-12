@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Filter, ChevronDown, X, SlidersHorizontal } from "lucide-react";
+import { Filter, ChevronDown } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -20,14 +20,28 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { JOB_CONTRACT, JOB_PORTALS, JOB_TYPE } from "@/data/enums";
 
-export function JobsFilters({ filters, onFiltersChange }) {
+interface Filters {
+  q: string;
+  location: string;
+  job_type: string;
+  job_contract: string;
+  job_portal: string;
+  sortBy?: string;
+  sortOrder?: string;
+  session_id?: string | number | null;
+}
+
+interface JobsFiltersProps {
+  filters: Filters;
+  onFiltersChange: (updates: Partial<Filters>) => void;
+}
+
+export default function JobsFilters({ filters, onFiltersChange }: JobsFiltersProps) {
   // Local state for filters within the popover
   const [localSearch, setLocalSearch] = useState(filters.q);
   const [localLocation, setLocalLocation] = useState(filters.location);
   const [localJobType, setLocalJobType] = useState(filters.job_type);
-  const [localJobContract, setLocalJobContract] = useState(
-    filters.job_contract,
-  );
+  const [localJobContract, setLocalJobContract] = useState(filters.job_contract);
   const [localJobPortal, setLocalJobPortal] = useState(filters.job_portal);
   const [open, setOpen] = useState(false);
 
@@ -141,7 +155,7 @@ export function JobsFilters({ filters, onFiltersChange }) {
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
                     {JOB_PORTALS.map((portal) => (
-                      <SelectItem key={portal.value} value={portal.value}>
+                      <SelectItem key={portal.value || ""} value={portal.value || ""}>
                         {portal.label}
                       </SelectItem>
                     ))}
@@ -158,7 +172,7 @@ export function JobsFilters({ filters, onFiltersChange }) {
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
                     {JOB_TYPE.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
+                      <SelectItem key={type.value || ""} value={type.value || ""}>
                         {type.label}
                       </SelectItem>
                     ))}
@@ -178,7 +192,7 @@ export function JobsFilters({ filters, onFiltersChange }) {
                   <SelectContent>
                     <SelectItem value="all">All Contracts</SelectItem>
                     {JOB_CONTRACT.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
+                      <SelectItem key={type.value || ""} value={type.value || ""}>
                         {type.label}
                       </SelectItem>
                     ))}

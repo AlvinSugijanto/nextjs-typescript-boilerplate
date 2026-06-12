@@ -1,29 +1,29 @@
+"use client";
+
 import { useBoolean } from "@/hooks/use-boolean";
 import { useApi } from "@/hooks/use-api";
 import { useFilters } from "@/hooks/use-filters";
 import { SimpleTable, usePagination } from "@/components/table/simple-table";
 import { useTableSelection } from "@/hooks/use-table-selection";
 import React, { useEffect } from "react";
-import {
-  ArrowLeft,
-  Calendar,
-  Download,
-  ExternalLink,
-  MapPin,
-  Search,
-} from "lucide-react";
-import { JobsFilters } from "../components/jobs-filters";
+import { Calendar, Download, ExternalLink, MapPin, Search } from "lucide-react";
+import JobsFilters from "./components/jobs-filters";
 import { SearchJobsDialog } from "@/components/jobs/search-jobs-dialog";
 import { JOB_CONTRACT, JOB_PORTALS, JOB_TYPE } from "@/data/enums";
 import { Button } from "@/components/ui/button";
-import { fDate, fDateTime, toUTC7 } from "@/utils/format-time";
+import { fDate, fDateTime } from "@/utils/format-time";
 import { Badge } from "@/components/ui/badge";
+import { Job, PaginatedResponse, Session } from "@/types/jobs";
 
 const PAGE_SIZE = 10;
 
-const AllJobsSections = ({ session, setSession }) => {
+interface SessionDetailViewProps {
+  session: Session;
+}
+
+const SessionDetailView = ({ session }: SessionDetailViewProps) => {
   const searchModal = useBoolean(false);
-  const { data: jobs, call, loading } = useApi();
+  const { data: jobs, call, loading } = useApi<PaginatedResponse<Job>>();
 
   const { page, pageSize, setPage, paginationProps } = usePagination({
     totalItems: jobs?.total,
@@ -39,7 +39,7 @@ const AllJobsSections = ({ session, setSession }) => {
       job_portal: "all",
       sortBy: "created_at",
       sortOrder: "desc",
-      session_id: session?.id,
+      session_id: session?.id ? String(session.id) : "",
     },
     paramMapping: {
       q: "search",
@@ -57,7 +57,7 @@ const AllJobsSections = ({ session, setSession }) => {
     handleSelectAll,
     handleClearSelection,
     handleExport,
-  } = useTableSelection({
+  } = useTableSelection<Job>({
     currentPageData: jobs?.data || [],
     apiUrl: "/api/v1/jobs",
     filters,
@@ -65,24 +65,23 @@ const AllJobsSections = ({ session, setSession }) => {
     getQueryParams,
   });
 
-  const sortConfig = { key: filters.sortBy, direction: filters.sortOrder };
+  const sortConfig = { key: filters.sortBy as string, direction: filters.sortOrder as "asc" | "desc" };
 
   const fetchJobs = async () => {
     const params = getQueryParams({ page, perPage: pageSize });
     call(`/api/v1/jobs?${params}`);
   };
-  // Row click → open job detail in new tab
-  const handleRowClick = (row) => {
+
+  const handleRowClick = (row: Job) => {
     window.open(`/dashboard/jobs/${row.id}`, "_blank");
   };
 
-  // ── Column definitions ──
   const columns = [
     {
       key: "title",
       label: "Title",
       sortable: true,
-      render: (row) => (
+      render: (row: Job) => (
         <div className="flex items-center gap-2">
           <Badge variant="default" className="capitalize w-[60px]">
             {JOB_TYPE.find((t) => t.value === row.job_type)?.label ?? "-"}
@@ -95,7 +94,7 @@ const AllJobsSections = ({ session, setSession }) => {
       key: "job_contract",
       label: "Contract",
       sortable: true,
-      render: (row) => (
+      render: (row: Job) => (
         <span className="capitalize">
           {JOB_CONTRACT.find((c) => c.value === row.job_contract)?.label ?? "-"}
         </span>
@@ -110,7 +109,7 @@ const AllJobsSections = ({ session, setSession }) => {
       key: "location",
       label: "Location",
       sortable: true,
-      render: (row) => (
+      render: (row: Job) => (
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="line-clamp-1">{row.location}</span>
@@ -121,7 +120,7 @@ const AllJobsSections = ({ session, setSession }) => {
       key: "salary",
       label: "Salary",
       sortable: true,
-      render: (row) =>
+      render: (row: Job) =>
         row.salary ? (
           <Badge variant="default">{row.salary}</Badge>
         ) : (
@@ -132,14 +131,14 @@ const AllJobsSections = ({ session, setSession }) => {
       key: "source",
       label: "Source",
       sortable: true,
-      render: (row) =>
+      render: (row: Job) =>
         JOB_PORTALS.find((c) => c.value === row.source)?.label ?? "-",
     },
     {
       key: "date_posted",
       label: "Posted",
       sortable: true,
-      render: (row) => (
+      render: (row: Job) => (
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="text-sm">{fDate(row.date_posted) || "-"}</span>
@@ -150,11 +149,11 @@ const AllJobsSections = ({ session, setSession }) => {
       key: "created_at",
       label: "Searched At",
       sortable: true,
-      render: (row) => (
+      render: (row: Job) => (
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="text-sm" title={fDateTime(row.created_at)}>
-            {fDateTime(toUTC7(row.created_at)) || "-"}
+            {fDate(row.created_at) || "-"}
           </span>
         </div>
       ),
@@ -163,7 +162,7 @@ const AllJobsSections = ({ session, setSession }) => {
       key: "actions",
       label: "Actions",
       className: "w-[80px]",
-      render: (row) => (
+      render: (row: Job) => (
         <div
           className="flex items-center gap-1"
           onClick={(e) => e.stopPropagation()}
@@ -181,47 +180,31 @@ const AllJobsSections = ({ session, setSession }) => {
     },
   ];
 
-  // Refetch when page, pageSize, or filters change
   useEffect(() => {
     fetchJobs();
   }, [page, pageSize, filters]);
 
-  // Clear selection when jobs change
   useEffect(() => {
     handleClearSelection();
   }, [jobs?.data]);
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between gap-4">
-        <div className="flex gap-2 items-center">
-          {session && (
-            <Button
-              variant={"ghost"}
-              size={"icon"}
-              onClick={() => setSession(null)}
-            >
-              <ArrowLeft />
-            </Button>
-          )}
-          <h3 className="font-semibold ml-1 self-end">
-            {session?.name ? session.name : "All"} Jobs
-          </h3>
-        </div>
+        <h3 className="font-semibold self-end ml-1">{session.name} Jobs</h3>
 
         <div className="flex items-center gap-4">
           {selectedRows.size > 0 && (
-            <Button variant="outline" onClick={handleExport}>
+            <Button variant="outline" onClick={() => handleExport({ filename: "jobs" })}>
               <Download className="mr-2 h-4 w-4" />
               Export ({selectedRows.size})
             </Button>
           )}
-          {!session && (
-            <Button onClick={searchModal.onTrue}>
-              <Search className=" h-4 w-4" />
-              Search Jobs
-            </Button>
-          )}
-          <JobsFilters filters={filters} onFiltersChange={setFilters} />
+          <Button onClick={searchModal.onTrue}>
+            <Search className="h-4 w-4" />
+            Search Jobs
+          </Button>
+          <JobsFilters filters={filters as any} onFiltersChange={setFilters as any} />
         </div>
       </div>
 
@@ -250,4 +233,4 @@ const AllJobsSections = ({ session, setSession }) => {
   );
 };
 
-export default AllJobsSections;
+export default SessionDetailView;

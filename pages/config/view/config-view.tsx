@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import React from "react";
-import { Building2, KeyRound } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import BannedCompaniesSection from "./sections/banned-company-sections";
-import BannedKeywordsSection from "./sections/banned-keyword-sections";
+import React from "react"
+import { Building2, KeyRound } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import BannedCompaniesSection from "./sections/banned-company-sections"
+import BannedKeywordsSection from "./sections/banned-keyword-sections"
 
 export default function ConfigView() {
   return (
@@ -12,10 +12,10 @@ export default function ConfigView() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Configuration</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your filter rules to ignore specific recruiters or job posting
-            content.
+          <h1 className="text-2xl font-semibold">Configuration</h1>
+          <p className="mt-1 text-muted-foreground">
+            Manage your filter rules to ignore specific recruiters or job
+            posting content.
           </p>
         </div>
       </div>
@@ -33,14 +33,14 @@ export default function ConfigView() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="companies" className="space-y-4 mt-4">
+        <TabsContent value="companies" className="mt-4 space-y-4">
           <BannedCompaniesSection />
         </TabsContent>
 
-        <TabsContent value="keywords" className="space-y-4 mt-4">
+        <TabsContent value="keywords" className="mt-4 space-y-4">
           <BannedKeywordsSection />
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

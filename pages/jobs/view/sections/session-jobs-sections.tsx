@@ -1,3 +1,5 @@
+"use client";
+
 import { useBoolean } from "@/hooks/use-boolean";
 import { useApi } from "@/hooks/use-api";
 import { useFilters } from "@/hooks/use-filters";
@@ -7,19 +9,14 @@ import React, { useEffect, useState } from "react";
 import {
   Calendar,
   Download,
-  ExternalLink,
-  MapPin,
-  Search,
   EllipsisVertical,
 } from "lucide-react";
-import { JobsFilters } from "../components/jobs-filters";
 import { SearchJobsDialog } from "@/components/jobs/search-jobs-dialog";
-import { JOB_CONTRACT, JOB_PORTALS, JOB_TYPE } from "@/data/enums";
 import { Button } from "@/components/ui/button";
+import { FloatingActionBar } from "@/components/floating-action-bar";
 import { fDate, fDateTime, toUTC7 } from "@/utils/format-time";
 import { Badge } from "@/components/ui/badge";
 import SearchInput from "@/components/search-input";
-import SessionDetailView from "../session-detail-view";
 import AllJobsSections from "./all-jobs-sections";
 import { toast } from "sonner";
 import DeleteDialog from "@/components/delete-dialog";
@@ -29,20 +26,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { PaginatedResponse, Session } from "@/types/jobs";
 
 const PAGE_SIZE = 10;
 
 const SessionJobsSections = () => {
   const searchModal = useBoolean(false);
   const deleteModal = useBoolean(false);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedItem, setSelectedItem] = useState<Session | null>(null);
 
-  const { data: jobs, call, loading } = useApi();
+  const { data: sessions, call, loading } = useApi<PaginatedResponse<Session>>();
   const { call: callDelete, loading: loadingDelete } = useApi();
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState<Session | null>(null);
 
   const { page, pageSize, setPage, paginationProps } = usePagination({
-    totalItems: jobs?.total,
+    totalItems: sessions?.total,
     initialPageSize: PAGE_SIZE,
   });
 
@@ -67,17 +65,17 @@ const SessionJobsSections = () => {
     handleSelectAll,
     handleClearSelection,
     handleExport,
-  } = useTableSelection({
-    currentPageData: jobs?.data || [],
-    apiUrl: "/api/v1/jobs",
+  } = useTableSelection<Session>({
+    currentPageData: sessions?.data || [],
+    apiUrl: "/api/v1/sessions",
     filters,
     itemLabel: "list-session-jobs",
     getQueryParams,
   });
 
-  const sortConfig = { key: filters.sortBy, direction: filters.sortOrder };
+  const sortConfig = { key: filters.sortBy as string, direction: filters.sortOrder as "asc" | "desc" };
 
-  const fetchJobs = async () => {
+  const fetchSessions = async () => {
     const params = getQueryParams({ page, perPage: pageSize });
     call(`/api/v1/sessions?${params}`);
   };
@@ -88,18 +86,17 @@ const SessionJobsSections = () => {
       await callDelete(`/api/v1/sessions/${selectedItem.id}`, "DELETE");
       toast.success(`Session "${selectedItem.name}" deleted successfully.`);
       deleteModal.onFalse();
-      fetchJobs();
+      fetchSessions();
     } catch (error) {
-      toast.error(error.message || "Failed to delete session");
+      const err = error as { message?: string };
+      toast.error(err.message || "Failed to delete session");
     }
   };
 
-  // Row click → open job detail in new tab
-  const handleRowClick = (row) => {
+  const handleRowClick = (row: Session) => {
     setSession(row);
   };
 
-  // ── Column definitions ──
   const columns = [
     {
       key: "id",
@@ -115,7 +112,7 @@ const SessionJobsSections = () => {
       key: "status",
       label: "Status",
       sortable: true,
-      render: (row) => <Badge variant={"default"}>{row.status}</Badge>,
+      render: (row: Session) => <Badge variant="default">{row.status}</Badge>,
     },
     {
       key: "total_jobs",
@@ -126,7 +123,7 @@ const SessionJobsSections = () => {
       key: "start_run_time",
       label: "Started At",
       sortable: true,
-      render: (row) => (
+      render: (row: Session) => (
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="text-sm" title={fDateTime(row.start_run_time)}>
@@ -139,11 +136,11 @@ const SessionJobsSections = () => {
       key: "end_run_time",
       label: "Ended At",
       sortable: true,
-      render: (row) => (
+      render: (row: Session) => (
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="text-sm" title={fDateTime(row.end_run_time)}>
-            {fDate(row.end_run_time) || "-"}
+          <span className="text-sm" title={row.end_run_time ? fDateTime(row.end_run_time) : ""}>
+            {row.end_run_time ? fDate(row.end_run_time) : "-"}
           </span>
         </div>
       ),
@@ -152,7 +149,7 @@ const SessionJobsSections = () => {
       key: "actions",
       label: "Actions",
       className: "w-[80px] text-right",
-      render: (row) => (
+      render: (row: Session) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -188,43 +185,36 @@ const SessionJobsSections = () => {
     },
   ];
 
-  // Refetch when page, pageSize, or filters change
   useEffect(() => {
-    fetchJobs();
+    fetchSessions();
   }, [page, pageSize, filters]);
 
-  // Clear selection when jobs change
   useEffect(() => {
     handleClearSelection();
-  }, [jobs?.data]);
+  }, [sessions?.data]);
 
   if (session) {
     return <AllJobsSections session={session} setSession={setSession} />;
   }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between gap-4">
-        <h3 className="font-semibold  self-end ml-1">Session Jobs</h3>
+        <h3 className="font-semibold self-end ml-1">Session Jobs</h3>
 
         <div className="flex items-center gap-4">
-          {selectedRows.size > 0 && (
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="mr-2 h-4 w-4" />
-              Export ({selectedRows.size})
-            </Button>
-          )}
 
           <SearchInput
-            value={filters.q}
+            value={filters.q as string}
             onChange={(value) => setFilter("q", value)}
             placeholder="Search items..."
           />
         </div>
       </div>
-      {/* <div className="my-4"></div> */}
+
       <SimpleTable
         columns={columns}
-        data={jobs?.data || []}
+        data={sessions?.data || []}
         isLoading={loading}
         onClick={handleRowClick}
         selectable
@@ -241,7 +231,7 @@ const SessionJobsSections = () => {
       <SearchJobsDialog
         open={searchModal.value}
         setOpen={searchModal.setValue}
-        refetch={fetchJobs}
+        refetch={fetchSessions}
       />
 
       <DeleteDialog
@@ -251,6 +241,12 @@ const SessionJobsSections = () => {
         description={`Are you sure you want to delete session "${selectedItem?.name || ""}"?`}
         onConfirm={handleConfirmDelete}
         loading={loadingDelete}
+      />
+
+      <FloatingActionBar
+        selectedCount={selectedRows.size}
+        onExport={() => handleExport({ filename: "sessions" })}
+        onCancel={handleClearSelection}
       />
     </div>
   );
