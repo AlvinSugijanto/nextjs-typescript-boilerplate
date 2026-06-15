@@ -1,36 +1,36 @@
-"use client";
+"use client"
 
-import { useBoolean } from "@/hooks/use-boolean";
-import { useApi } from "@/hooks/use-api";
-import { useFilters } from "@/hooks/use-filters";
-import { SimpleTable, usePagination } from "@/components/table/simple-table";
-import { useTableSelection } from "@/hooks/use-table-selection";
-import React, { useEffect } from "react";
-import { Calendar, Download, ExternalLink, MapPin, Search } from "lucide-react";
-import JobsFilters from "./components/jobs-filters";
-import { SearchJobsDialog } from "@/components/jobs/search-jobs-dialog";
-import { JOB_CONTRACT, JOB_PORTALS, JOB_TYPE } from "@/data/enums";
-import { Button } from "@/components/ui/button";
-import { fDate, fDateTime } from "@/utils/format-time";
-import { Badge } from "@/components/ui/badge";
-import { Job, PaginatedResponse, Session } from "@/types/jobs";
+import { useBoolean } from "@/hooks/use-boolean"
+import { useApi } from "@/hooks/use-api"
+import { useFilters } from "@/hooks/use-filters"
+import { SimpleTable, usePagination } from "@/components/table/simple-table"
+import { useTableSelection } from "@/hooks/use-table-selection"
+import React, { useEffect } from "react"
+import { Calendar, Download, ExternalLink, MapPin, Search } from "lucide-react"
+import JobsFilters, { Filters } from "./components/jobs-filters"
+import { SearchJobsDialog } from "@/components/jobs/search-jobs-dialog"
+import { JOB_CONTRACT, JOB_PORTALS, JOB_TYPE } from "@/data/enums"
+import { Button } from "@/components/ui/button"
+import { fDate, fDateTime } from "@/utils/format-time"
+import { Badge } from "@/components/ui/badge"
+import { Job, PaginatedResponse, Session } from "@/types"
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 interface SessionDetailViewProps {
-  session: Session;
+  session: Session
 }
 
 const SessionDetailView = ({ session }: SessionDetailViewProps) => {
-  const searchModal = useBoolean(false);
-  const { data: jobs, call, loading } = useApi<PaginatedResponse<Job>>();
+  const searchModal = useBoolean(false)
+  const { data: jobs, call, loading } = useApi<PaginatedResponse<Job>>()
 
   const { page, pageSize, setPage, paginationProps } = usePagination({
     totalItems: jobs?.total,
     initialPageSize: PAGE_SIZE,
-  });
+  })
 
-  const { filters, setFilters, handleSort, getQueryParams } = useFilters({
+  const { filters, setFilters, handleSort, getQueryParams } = useFilters<Filters>({
     initialFilters: {
       q: "",
       job_type: "all",
@@ -48,7 +48,7 @@ const SessionDetailView = ({ session }: SessionDetailViewProps) => {
       job_portal: "source",
     },
     resetPage: () => setPage(1),
-  });
+  })
 
   const {
     selectedRows,
@@ -63,18 +63,21 @@ const SessionDetailView = ({ session }: SessionDetailViewProps) => {
     filters,
     itemLabel: "jobs",
     getQueryParams,
-  });
+  })
 
-  const sortConfig = { key: filters.sortBy as string, direction: filters.sortOrder as "asc" | "desc" };
+  const sortConfig = {
+    key: filters.sortBy as string,
+    direction: filters.sortOrder as "asc" | "desc",
+  }
 
   const fetchJobs = async () => {
-    const params = getQueryParams({ page, perPage: pageSize });
-    call(`/api/v1/jobs?${params}`);
-  };
+    const params = getQueryParams({ page, perPage: pageSize })
+    call(`/api/v1/jobs?${params}`)
+  }
 
   const handleRowClick = (row: Job) => {
-    window.open(`/dashboard/jobs/${row.id}`, "_blank");
-  };
+    window.open(`/dashboard/jobs/${row.id}`, "_blank")
+  }
 
   const columns = [
     {
@@ -83,7 +86,7 @@ const SessionDetailView = ({ session }: SessionDetailViewProps) => {
       sortable: true,
       render: (row: Job) => (
         <div className="flex items-center gap-2">
-          <Badge variant="default" className="capitalize w-[60px]">
+          <Badge variant="default" className="w-[60px] capitalize">
             {JOB_TYPE.find((t) => t.value === row.job_type)?.label ?? "-"}
           </Badge>
           <span className="line-clamp-1 font-medium">{row.title}</span>
@@ -111,7 +114,7 @@ const SessionDetailView = ({ session }: SessionDetailViewProps) => {
       sortable: true,
       render: (row: Job) => (
         <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+          <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="line-clamp-1">{row.location}</span>
         </div>
       ),
@@ -140,7 +143,7 @@ const SessionDetailView = ({ session }: SessionDetailViewProps) => {
       sortable: true,
       render: (row: Job) => (
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+          <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="text-sm">{fDate(row.date_posted) || "-"}</span>
         </div>
       ),
@@ -151,7 +154,7 @@ const SessionDetailView = ({ session }: SessionDetailViewProps) => {
       sortable: true,
       render: (row: Job) => (
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+          <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="text-sm" title={fDateTime(row.created_at)}>
             {fDate(row.created_at) || "-"}
           </span>
@@ -178,24 +181,27 @@ const SessionDetailView = ({ session }: SessionDetailViewProps) => {
         </div>
       ),
     },
-  ];
+  ]
 
   useEffect(() => {
-    fetchJobs();
-  }, [page, pageSize, filters]);
+    fetchJobs()
+  }, [page, pageSize, filters])
 
   useEffect(() => {
-    handleClearSelection();
-  }, [jobs?.data]);
+    handleClearSelection()
+  }, [jobs?.data])
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between gap-4">
-        <h3 className="font-semibold self-end ml-1">{session.name} Jobs</h3>
+        <h3 className="ml-1 self-end font-semibold">{session.name} Jobs</h3>
 
         <div className="flex items-center gap-4">
           {selectedRows.size > 0 && (
-            <Button variant="outline" onClick={() => handleExport({ filename: "jobs" })}>
+            <Button
+              variant="outline"
+              onClick={() => handleExport({ filename: "jobs" })}
+            >
               <Download className="mr-2 h-4 w-4" />
               Export ({selectedRows.size})
             </Button>
@@ -204,7 +210,10 @@ const SessionDetailView = ({ session }: SessionDetailViewProps) => {
             <Search className="h-4 w-4" />
             Search Jobs
           </Button>
-          <JobsFilters filters={filters as any} onFiltersChange={setFilters as any} />
+          <JobsFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+          />
         </div>
       </div>
 
@@ -230,7 +239,7 @@ const SessionDetailView = ({ session }: SessionDetailViewProps) => {
         refetch={fetchJobs}
       />
     </div>
-  );
-};
+  )
+}
 
-export default SessionDetailView;
+export default SessionDetailView

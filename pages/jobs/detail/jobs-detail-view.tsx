@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   Briefcase,
@@ -10,7 +10,7 @@ import {
   DollarSign,
   Calendar,
   ExternalLink,
-} from "lucide-react";
+} from "lucide-react"
 
 import {
   Card,
@@ -18,36 +18,36 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
-import { useApi } from "@/hooks/use-api";
-import { JobDescription } from "@/components/jobs/job-description";
-import { fDate } from "@/utils/format-time";
-import { Job } from "@/types/jobs";
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Separator } from "@/components/ui/separator"
+import { useApi } from "@/hooks/use-api"
+import { JobDescription } from "@/components/jobs/job-description"
+import { fDate } from "@/utils/format-time"
+import { Job } from "@/types"
 
 interface JobDetailResponse {
-  job: Job;
+  job: Job
 }
 
 interface JobDetailViewProps {
-  id: string | number;
+  id: string | number
 }
 
 export default function JobDetailView({ id }: JobDetailViewProps) {
-  const router = useRouter();
-  const { data, call, loading } = useApi<JobDetailResponse>();
+  const router = useRouter()
+  const { data, call, loading } = useApi<JobDetailResponse>()
 
   useEffect(() => {
-    call(`/api/v1/jobs/${id}`);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+    call(`/api/v1/jobs/${id}`)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
 
   const job = useMemo(() => {
-    return data?.job || null;
-  }, [data]);
+    return data?.job || null
+  }, [data])
 
   if (loading) {
     return (
@@ -65,11 +65,11 @@ export default function JobDetailView({ id }: JobDetailViewProps) {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   if (!job) {
-    return null;
+    return null
   }
 
   return (
@@ -161,5 +161,5 @@ export default function JobDetailView({ id }: JobDetailViewProps) {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

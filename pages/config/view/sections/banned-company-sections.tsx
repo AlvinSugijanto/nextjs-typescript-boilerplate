@@ -9,6 +9,7 @@ import { SimpleTable, usePagination } from "@/components/table/simple-table"
 import { fDate } from "@/utils/format-time"
 import { useApi } from "@/hooks/use-api"
 import { useFilters } from "@/hooks/use-filters"
+import { useDebounce } from "@/hooks/use-debounce"
 import { useBoolean } from "@/hooks/use-boolean"
 import { useTableSelection } from "@/hooks/use-table-selection"
 import SearchInput from "@/components/search-input"
@@ -20,26 +21,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { BannedCompany, PaginatedResponse } from "@/types"
 
 const PAGE_SIZE = 10
-
-interface BannedCompany {
-  id: string | number
-  name: string
-  created_at?: string
-}
-
-interface PaginatedCompanies {
-  data: BannedCompany[]
-  total: number
-}
 
 export default function BannedCompaniesSection() {
   const createModal = useBoolean(false)
   const deleteModal = useBoolean(false)
   const [selectedItem, setSelectedItem] = useState<BannedCompany | null>(null)
 
-  const { data: companies, call, loading } = useApi<PaginatedCompanies>()
+  const {
+    data: companies,
+    call,
+    loading,
+  } = useApi<PaginatedResponse<BannedCompany>>()
   const { call: callDelete, loading: loadingDelete } = useApi()
 
   const { page, pageSize, setPage, paginationProps } = usePagination({
@@ -52,6 +47,17 @@ export default function BannedCompaniesSection() {
     paramMapping: { q: "search", sortBy: "sort_by", sortOrder: "sort_order" },
     resetPage: () => setPage(1),
   })
+
+  // const [searchQuery, setSearchQuery] = useState(filters.q as string)
+  // const debouncedSearch = useDebounce(searchQuery, 500)
+
+  // useEffect(() => {
+  //   setFilter("q", debouncedSearch)
+  // }, [debouncedSearch, setFilter])
+
+  // useEffect(() => {
+  //   setSearchQuery(filters.q as string)
+  // }, [filters.q])
 
   const {
     selectedRows,
@@ -87,13 +93,8 @@ export default function BannedCompaniesSection() {
       setSelectedItem(null)
       fetchCompanies()
     } catch (error) {
-      const err = error as {
-        response?: { data?: { detail?: string } }
-        message?: string
-      }
-      toast.error(
-        err.response?.data?.detail ?? err.message ?? "Failed to delete company"
-      )
+      const err = error as { message?: string }
+      toast.error(err.message || "Failed to delete company")
     }
   }
 
@@ -106,7 +107,7 @@ export default function BannedCompaniesSection() {
     },
     {
       key: "created_at",
-      label: "Created at",
+      label: "Created",
       className: "w-[180px] text-muted-foreground text-sm",
       sortable: true,
       render: (row: BannedCompany) => (
@@ -169,7 +170,7 @@ export default function BannedCompaniesSection() {
         <h3 className="ml-1 self-end font-semibold">Banned Companies</h3>
         <div className="flex items-center gap-4">
           <SearchInput
-            value={filters.q as string}
+            value={filters.q}
             onChange={(value) => setFilter("q", value)}
             placeholder="Search companies..."
           />

@@ -23,12 +23,14 @@ export interface Session {
   end_run_time?: string
 }
 
-export interface SingleItemResponse<T> {
-  data: T
-  success: boolean
+export interface BannedCompany {
+  id: string | number
+  name: string
+  created_at?: string
 }
 
-export interface PaginatedResponse<T> {
-  data: T[]
-  total: number
+export interface BannedKeyword {
+  id: string | number
+  keyword: string
+  created_at?: string
 }

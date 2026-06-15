@@ -1,97 +1,103 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect } from "react";
-import { Filter, ChevronDown } from "lucide-react";
+import React, { useState } from "react"
+import { Filter, ChevronDown } from "lucide-react"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/components/ui/popover"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { JOB_CONTRACT, JOB_PORTALS, JOB_TYPE } from "@/data/enums";
+} from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { JOB_CONTRACT, JOB_PORTALS, JOB_TYPE } from "@/data/enums"
 
-interface Filters {
-  q: string;
-  location: string;
-  job_type: string;
-  job_contract: string;
-  job_portal: string;
-  sortBy?: string;
-  sortOrder?: string;
-  session_id?: string | number | null;
+export interface Filters {
+  [key: string]: string | number | boolean | null | undefined
+  q: string
+  location: string
+  job_type: string
+  job_contract: string
+  job_portal: string
+  sortBy?: string
+  sortOrder?: string
+  session_id?: string | number | null
 }
 
 interface JobsFiltersProps {
-  filters: Filters;
-  onFiltersChange: (updates: Partial<Filters>) => void;
+  filters: Filters
+  onFiltersChange: (updates: Partial<Filters>) => void
 }
 
-export default function JobsFilters({ filters, onFiltersChange }: JobsFiltersProps) {
+export default function JobsFilters({
+  filters,
+  onFiltersChange,
+}: JobsFiltersProps) {
   // Local state for filters within the popover
-  const [localSearch, setLocalSearch] = useState(filters.q);
-  const [localLocation, setLocalLocation] = useState(filters.location);
-  const [localJobType, setLocalJobType] = useState(filters.job_type);
-  const [localJobContract, setLocalJobContract] = useState(filters.job_contract);
-  const [localJobPortal, setLocalJobPortal] = useState(filters.job_portal);
-  const [open, setOpen] = useState(false);
+  const [localFilters, setLocalFilters] = useState<Filters>(filters)
+  const [prevFilters, setPrevFilters] = useState<Filters>(filters)
+  const [open, setOpen] = useState(false)
 
-  // Sync local state when external props change (e.g., from URL or reset)
-  useEffect(() => {
-    setLocalSearch(filters.q);
-    setLocalLocation(filters.location);
-    setLocalJobType(filters.job_type);
-    setLocalJobContract(filters.job_contract);
-    setLocalJobPortal(filters.job_portal);
-  }, [filters, open]);
+  // Adjust state when props change, avoiding useEffect
+  if (filters !== prevFilters) {
+    setPrevFilters(filters)
+    setLocalFilters(filters)
+  }
 
   const activeFiltersCount = [
-    localSearch !== "",
-    localJobType !== "all" && localJobType !== "",
-    localJobContract !== "all" && localJobContract !== "",
-    localLocation !== "",
-    localJobPortal !== "all" && localJobPortal !== "",
-  ].filter(Boolean).length;
+    localFilters.q !== "",
+    localFilters.job_type !== "all" && localFilters.job_type !== "",
+    localFilters.job_contract !== "all" && localFilters.job_contract !== "",
+    localFilters.location !== "",
+    localFilters.job_portal !== "all" && localFilters.job_portal !== "",
+  ].filter(Boolean).length
 
   const handleApply = () => {
     onFiltersChange({
-      q: localSearch,
-      location: localLocation,
-      job_type: localJobType,
-      job_contract: localJobContract,
-      job_portal: localJobPortal,
-    });
-    setOpen(false);
-  };
+      q: localFilters.q,
+      location: localFilters.location,
+      job_type: localFilters.job_type,
+      job_contract: localFilters.job_contract,
+      job_portal: localFilters.job_portal,
+    })
+    setOpen(false)
+  }
 
   const handleReset = () => {
-    setLocalSearch("");
-    setLocalLocation("");
-    setLocalJobType("all");
-    setLocalJobContract("all");
-    setLocalJobPortal("all");
-    onFiltersChange({
+    const resetValues = {
       q: "",
       location: "",
       job_type: "all",
       job_contract: "all",
       job_portal: "all",
-    });
-    setOpen(false);
-  };
+    }
+    setLocalFilters((prev) => ({
+      ...prev,
+      ...resetValues,
+    }))
+    onFiltersChange(resetValues)
+    setOpen(false)
+  }
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      // Re-sync local state when popover is opened
+      setLocalFilters(filters)
+    }
+    setOpen(nextOpen)
+  }
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm" className="h-9 gap-2">
             <Filter className="h-4 w-4" />
@@ -107,7 +113,7 @@ export default function JobsFilters({ filters, onFiltersChange }: JobsFiltersPro
         <PopoverContent className="w-80 p-4" align="start">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="font-medium leading-none">Job Filters</h4>
+              <h4 className="leading-none font-medium">Job Filters</h4>
               <Button
                 variant="ghost"
                 size="sm"
@@ -120,14 +126,16 @@ export default function JobsFilters({ filters, onFiltersChange }: JobsFiltersPro
 
             <Separator />
 
-            <div className="grid gap-4 w-full">
+            <div className="grid w-full gap-4">
               <div className="space-y-2">
                 <Label htmlFor="search-filter">Keywords</Label>
                 <Input
                   id="search-filter"
                   placeholder="e.g. Developer, Google"
-                  value={localSearch}
-                  onChange={(e) => setLocalSearch(e.target.value)}
+                  value={localFilters.q}
+                  onChange={(e) =>
+                    setLocalFilters((prev) => ({ ...prev, q: e.target.value }))
+                  }
                   className="h-9"
                 />
               </div>
@@ -137,8 +145,13 @@ export default function JobsFilters({ filters, onFiltersChange }: JobsFiltersPro
                 <Input
                   id="location-filter"
                   placeholder="e.g. Jakarta, Indonesia"
-                  value={localLocation}
-                  onChange={(e) => setLocalLocation(e.target.value)}
+                  value={localFilters.location}
+                  onChange={(e) =>
+                    setLocalFilters((prev) => ({
+                      ...prev,
+                      location: e.target.value,
+                    }))
+                  }
                   className="h-9"
                 />
               </div>
@@ -146,8 +159,10 @@ export default function JobsFilters({ filters, onFiltersChange }: JobsFiltersPro
               <div className="space-y-2">
                 <Label htmlFor="job-portal-filter">Job Portal</Label>
                 <Select
-                  value={localJobPortal}
-                  onValueChange={setLocalJobPortal}
+                  value={localFilters.job_portal}
+                  onValueChange={(val) =>
+                    setLocalFilters((prev) => ({ ...prev, job_portal: val }))
+                  }
                 >
                   <SelectTrigger className="h-9 w-full">
                     <SelectValue placeholder="Select Job Portal" />
@@ -155,7 +170,10 @@ export default function JobsFilters({ filters, onFiltersChange }: JobsFiltersPro
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
                     {JOB_PORTALS.map((portal) => (
-                      <SelectItem key={portal.value || ""} value={portal.value || ""}>
+                      <SelectItem
+                        key={portal.value || ""}
+                        value={portal.value || ""}
+                      >
                         {portal.label}
                       </SelectItem>
                     ))}
@@ -163,16 +181,24 @@ export default function JobsFilters({ filters, onFiltersChange }: JobsFiltersPro
                 </Select>
               </div>
 
-              <div className="space-y-2 w-full">
+              <div className="w-full space-y-2">
                 <Label>Job Type</Label>
-                <Select value={localJobType} onValueChange={setLocalJobType}>
+                <Select
+                  value={localFilters.job_type}
+                  onValueChange={(val) =>
+                    setLocalFilters((prev) => ({ ...prev, job_type: val }))
+                  }
+                >
                   <SelectTrigger className="h-9 w-full">
                     <SelectValue placeholder="Select Job Type" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
                     {JOB_TYPE.map((type) => (
-                      <SelectItem key={type.value || ""} value={type.value || ""}>
+                      <SelectItem
+                        key={type.value || ""}
+                        value={type.value || ""}
+                      >
                         {type.label}
                       </SelectItem>
                     ))}
@@ -180,11 +206,13 @@ export default function JobsFilters({ filters, onFiltersChange }: JobsFiltersPro
                 </Select>
               </div>
 
-              <div className="space-y-2 w-full">
+              <div className="w-full space-y-2">
                 <Label>Contract Type</Label>
                 <Select
-                  value={localJobContract}
-                  onValueChange={setLocalJobContract}
+                  value={localFilters.job_contract}
+                  onValueChange={(val) =>
+                    setLocalFilters((prev) => ({ ...prev, job_contract: val }))
+                  }
                 >
                   <SelectTrigger className="h-9 w-full">
                     <SelectValue placeholder="Select Contract Type" />
@@ -192,7 +220,10 @@ export default function JobsFilters({ filters, onFiltersChange }: JobsFiltersPro
                   <SelectContent>
                     <SelectItem value="all">All Contracts</SelectItem>
                     {JOB_CONTRACT.map((type) => (
-                      <SelectItem key={type.value || ""} value={type.value || ""}>
+                      <SelectItem
+                        key={type.value || ""}
+                        value={type.value || ""}
+                      >
                         {type.label}
                       </SelectItem>
                     ))}
@@ -220,5 +251,5 @@ export default function JobsFilters({ filters, onFiltersChange }: JobsFiltersPro
         </PopoverContent>
       </Popover>
     </div>
-  );
+  )
 }

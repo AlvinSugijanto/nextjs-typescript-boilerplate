@@ -22,7 +22,7 @@ import {
   POSTED_WITHIN_TYPES,
   JOB_PORTALS,
 } from "@/data/enums"
-import { PaginatedResponse, Session, SingleItemResponse } from "@/types/jobs"
+import { PaginatedResponse, Session, SingleItemResponse } from "@/types"
 
 const formSchema = z.object({
   keywords: z.string().min(1, "Keywords is required"),
@@ -92,7 +92,7 @@ export function SearchJobsDialog({
     }
   }, [scraping.status, setOpen])
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormValues) => {
     try {
       setIsCreatingSession(true)
       const sessionPayload = {
@@ -115,7 +115,10 @@ export function SearchJobsDialog({
         job_type: data.job_type || undefined,
         easy_apply: data.easy_apply,
         results_wanted: Number(data.results_wanted) || 25,
-        hours_old: data.hours_old && data.hours_old !== "all" ? parseInt(data.hours_old, 10) : undefined,
+        hours_old:
+          data.hours_old && data.hours_old !== "all"
+            ? parseInt(data.hours_old, 10)
+            : undefined,
         job_portals: data.job_portals,
         session_id: sessionResp?.data?.id,
       }

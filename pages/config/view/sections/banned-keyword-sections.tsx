@@ -10,6 +10,7 @@ import { SimpleTable, usePagination } from "@/components/table/simple-table"
 import { fDate } from "@/utils/format-time"
 import { useApi } from "@/hooks/use-api"
 import { useFilters } from "@/hooks/use-filters"
+import { useDebounce } from "@/hooks/use-debounce"
 import { useBoolean } from "@/hooks/use-boolean"
 import { useTableSelection } from "@/hooks/use-table-selection"
 import SearchInput from "@/components/search-input"
@@ -21,26 +22,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { BannedKeyword, PaginatedResponse } from "@/types"
 
 const PAGE_SIZE = 10
-
-interface BannedKeyword {
-  id: string | number
-  keyword: string
-  created_at?: string
-}
-
-interface PaginatedKeywords {
-  data: BannedKeyword[]
-  total: number
-}
 
 export default function BannedKeywordsSection() {
   const createModal = useBoolean(false)
   const deleteModal = useBoolean(false)
   const [selectedItem, setSelectedItem] = useState<BannedKeyword | null>(null)
 
-  const { data: keywords, call, loading } = useApi<PaginatedKeywords>()
+  const {
+    data: keywords,
+    call,
+    loading,
+  } = useApi<PaginatedResponse<BannedKeyword>>()
   const { call: callDelete, loading: loadingDelete } = useApi()
 
   const { page, pageSize, setPage, paginationProps } = usePagination({
@@ -53,6 +48,17 @@ export default function BannedKeywordsSection() {
     paramMapping: { q: "search", sortBy: "sort_by", sortOrder: "sort_order" },
     resetPage: () => setPage(1),
   })
+
+  // const [searchQuery, setSearchQuery] = useState(filters.q as string)
+  // const debouncedSearch = useDebounce(searchQuery, 500)
+
+  // useEffect(() => {
+  //   setFilter("q", debouncedSearch)
+  // }, [debouncedSearch, setFilter])
+
+  // useEffect(() => {
+  //   setSearchQuery(filters.q as string)
+  // }, [filters.q])
 
   const {
     selectedRows,
@@ -106,7 +112,7 @@ export default function BannedKeywordsSection() {
     },
     {
       key: "created_at",
-      label: "Added Date",
+      label: "Created",
       className: "w-[180px] text-muted-foreground text-sm",
       sortable: true,
       render: (row: BannedKeyword) => (
@@ -169,7 +175,7 @@ export default function BannedKeywordsSection() {
         <h3 className="ml-1 self-end font-semibold">Banned Keywords</h3>
         <div className="flex items-center gap-4">
           <SearchInput
-            value={filters.q as string}
+            value={filters.q}
             onChange={(value) => setFilter("q", value)}
             placeholder="Search keywords..."
           />

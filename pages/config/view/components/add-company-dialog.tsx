@@ -73,7 +73,8 @@ export default function AddCompanyModal({
       setOpen(false)
       reset()
       refetch()
-    } catch {
+    } catch (e) {
+      console.log(e)
       toast.error("Something went wrong. Please try again.")
     }
   }

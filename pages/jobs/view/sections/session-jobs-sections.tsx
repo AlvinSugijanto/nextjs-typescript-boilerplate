@@ -1,48 +1,45 @@
-"use client";
+"use client"
 
-import { useBoolean } from "@/hooks/use-boolean";
-import { useApi } from "@/hooks/use-api";
-import { useFilters } from "@/hooks/use-filters";
-import { SimpleTable, usePagination } from "@/components/table/simple-table";
-import { useTableSelection } from "@/hooks/use-table-selection";
-import React, { useEffect, useState } from "react";
-import {
-  Calendar,
-  Download,
-  EllipsisVertical,
-} from "lucide-react";
-import { SearchJobsDialog } from "@/components/jobs/search-jobs-dialog";
-import { Button } from "@/components/ui/button";
-import { FloatingActionBar } from "@/components/floating-action-bar";
-import { fDate, fDateTime, toUTC7 } from "@/utils/format-time";
-import { Badge } from "@/components/ui/badge";
-import SearchInput from "@/components/search-input";
-import AllJobsSections from "./all-jobs-sections";
-import { toast } from "sonner";
-import DeleteDialog from "@/components/delete-dialog";
+import { useBoolean } from "@/hooks/use-boolean"
+import { useApi } from "@/hooks/use-api"
+import { useFilters } from "@/hooks/use-filters"
+import { useDebounce } from "@/hooks/use-debounce"
+import { SimpleTable, usePagination } from "@/components/table/simple-table"
+import { useTableSelection } from "@/hooks/use-table-selection"
+import React, { useEffect, useState } from "react"
+import { Calendar, Download, EllipsisVertical } from "lucide-react"
+import { SearchJobsDialog } from "@/components/jobs/search-jobs-dialog"
+import { Button } from "@/components/ui/button"
+import { FloatingActionBar } from "@/components/floating-action-bar"
+import { fDate, fDateTime, toUTC7 } from "@/utils/format-time"
+import { Badge } from "@/components/ui/badge"
+import SearchInput from "@/components/search-input"
+import AllJobsSections from "./all-jobs-sections"
+import { toast } from "sonner"
+import DeleteDialog from "@/components/delete-dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { PaginatedResponse, Session } from "@/types/jobs";
+} from "@/components/ui/dropdown-menu"
+import { PaginatedResponse, Session } from "@/types"
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 10
 
 const SessionJobsSections = () => {
-  const searchModal = useBoolean(false);
-  const deleteModal = useBoolean(false);
-  const [selectedItem, setSelectedItem] = useState<Session | null>(null);
+  const searchModal = useBoolean(false)
+  const deleteModal = useBoolean(false)
+  const [selectedItem, setSelectedItem] = useState<Session | null>(null)
 
-  const { data: sessions, call, loading } = useApi<PaginatedResponse<Session>>();
-  const { call: callDelete, loading: loadingDelete } = useApi();
-  const [session, setSession] = useState<Session | null>(null);
+  const { data: sessions, call, loading } = useApi<PaginatedResponse<Session>>()
+  const { call: callDelete, loading: loadingDelete } = useApi()
+  const [session, setSession] = useState<Session | null>(null)
 
   const { page, pageSize, setPage, paginationProps } = usePagination({
     totalItems: sessions?.total,
     initialPageSize: PAGE_SIZE,
-  });
+  })
 
   const { filters, setFilter, handleSort, getQueryParams } = useFilters({
     initialFilters: {
@@ -56,7 +53,18 @@ const SessionJobsSections = () => {
       sortOrder: "sort_order",
     },
     resetPage: () => setPage(1),
-  });
+  })
+
+  // const [searchQuery, setSearchQuery] = useState(filters.q as string)
+  // const debouncedSearch = useDebounce(searchQuery, 500)
+
+  // useEffect(() => {
+  //   setFilter("q", debouncedSearch)
+  // }, [debouncedSearch, setFilter])
+
+  // useEffect(() => {
+  //   setSearchQuery(filters.q as string)
+  // }, [filters.q])
 
   const {
     selectedRows,
@@ -71,31 +79,34 @@ const SessionJobsSections = () => {
     filters,
     itemLabel: "list-session-jobs",
     getQueryParams,
-  });
+  })
 
-  const sortConfig = { key: filters.sortBy as string, direction: filters.sortOrder as "asc" | "desc" };
+  const sortConfig = {
+    key: filters.sortBy as string,
+    direction: filters.sortOrder as "asc" | "desc",
+  }
 
   const fetchSessions = async () => {
-    const params = getQueryParams({ page, perPage: pageSize });
-    call(`/api/v1/sessions?${params}`);
-  };
+    const params = getQueryParams({ page, perPage: pageSize })
+    call(`/api/v1/sessions?${params}`)
+  }
 
   const handleConfirmDelete = async () => {
-    if (!selectedItem?.id) return;
+    if (!selectedItem?.id) return
     try {
-      await callDelete(`/api/v1/sessions/${selectedItem.id}`, "DELETE");
-      toast.success(`Session "${selectedItem.name}" deleted successfully.`);
-      deleteModal.onFalse();
-      fetchSessions();
+      await callDelete(`/api/v1/sessions/${selectedItem.id}`, "DELETE")
+      toast.success(`Session "${selectedItem.name}" deleted successfully.`)
+      deleteModal.onFalse()
+      fetchSessions()
     } catch (error) {
-      const err = error as { message?: string };
-      toast.error(err.message || "Failed to delete session");
+      const err = error as { message?: string }
+      toast.error(err.message || "Failed to delete session")
     }
-  };
+  }
 
   const handleRowClick = (row: Session) => {
-    setSession(row);
-  };
+    setSession(row)
+  }
 
   const columns = [
     {
@@ -125,7 +136,7 @@ const SessionJobsSections = () => {
       sortable: true,
       render: (row: Session) => (
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+          <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
           <span className="text-sm" title={fDateTime(row.start_run_time)}>
             {fDateTime(toUTC7(row.start_run_time)) || "-"}
           </span>
@@ -138,8 +149,11 @@ const SessionJobsSections = () => {
       sortable: true,
       render: (row: Session) => (
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="text-sm" title={row.end_run_time ? fDateTime(row.end_run_time) : ""}>
+          <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <span
+            className="text-sm"
+            title={row.end_run_time ? fDateTime(row.end_run_time) : ""}
+          >
             {row.end_run_time ? fDate(row.end_run_time) : "-"}
           </span>
         </div>
@@ -163,8 +177,8 @@ const SessionJobsSections = () => {
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
             <DropdownMenuItem
               onClick={(e) => {
-                e.stopPropagation();
-                setSession(row);
+                e.stopPropagation()
+                setSession(row)
               }}
             >
               View Details
@@ -172,9 +186,9 @@ const SessionJobsSections = () => {
             <DropdownMenuItem
               className="text-destructive"
               onClick={(e) => {
-                e.stopPropagation();
-                setSelectedItem(row);
-                deleteModal.onTrue();
+                e.stopPropagation()
+                setSelectedItem(row)
+                deleteModal.onTrue()
               }}
             >
               Delete
@@ -183,29 +197,28 @@ const SessionJobsSections = () => {
         </DropdownMenu>
       ),
     },
-  ];
+  ]
 
   useEffect(() => {
-    fetchSessions();
-  }, [page, pageSize, filters]);
+    fetchSessions()
+  }, [page, pageSize, filters])
 
   useEffect(() => {
-    handleClearSelection();
-  }, [sessions?.data]);
+    handleClearSelection()
+  }, [sessions?.data])
 
   if (session) {
-    return <AllJobsSections session={session} setSession={setSession} />;
+    return <AllJobsSections session={session} setSession={setSession} />
   }
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between gap-4">
-        <h3 className="font-semibold self-end ml-1">Session Jobs</h3>
+        <h3 className="ml-1 self-end font-semibold">Session Jobs</h3>
 
         <div className="flex items-center gap-4">
-
           <SearchInput
-            value={filters.q as string}
+            value={filters.q}
             onChange={(value) => setFilter("q", value)}
             placeholder="Search items..."
           />
@@ -249,7 +262,7 @@ const SessionJobsSections = () => {
         onCancel={handleClearSelection}
       />
     </div>
-  );
-};
+  )
+}
 
-export default SessionJobsSections;
+export default SessionJobsSections
