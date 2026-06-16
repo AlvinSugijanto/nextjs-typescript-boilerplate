@@ -218,7 +218,6 @@ const SessionJobsSections = () => {
 
         <div className="flex items-center gap-4">
           <SearchInput
-            value={filters.q}
             onChange={(value) => setFilter("q", value)}
             placeholder="Search items..."
           />

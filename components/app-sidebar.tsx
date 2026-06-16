@@ -29,9 +29,9 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
+      name: "Job Scraper",
       logo: <GalleryVerticalEndIcon />,
-      plan: "Enterprise",
+      plan: "",
     },
   ],
   navMain: [

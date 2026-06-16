@@ -48,17 +48,6 @@ export default function BannedCompaniesSection() {
     resetPage: () => setPage(1),
   })
 
-  // const [searchQuery, setSearchQuery] = useState(filters.q as string)
-  // const debouncedSearch = useDebounce(searchQuery, 500)
-
-  // useEffect(() => {
-  //   setFilter("q", debouncedSearch)
-  // }, [debouncedSearch, setFilter])
-
-  // useEffect(() => {
-  //   setSearchQuery(filters.q as string)
-  // }, [filters.q])
-
   const {
     selectedRows,
     handleSelectOne,
@@ -75,7 +64,7 @@ export default function BannedCompaniesSection() {
   })
 
   const sortConfig = {
-    key: filters.sortBy as string,
+    key: filters.sortBy,
     direction: filters.sortOrder as "asc" | "desc",
   }
 
@@ -156,12 +145,10 @@ export default function BannedCompaniesSection() {
 
   useEffect(() => {
     fetchCompanies()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize, filters])
 
   useEffect(() => {
     handleClearSelection()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companies?.data])
 
   return (
@@ -170,9 +157,8 @@ export default function BannedCompaniesSection() {
         <h3 className="ml-1 self-end font-semibold">Banned Companies</h3>
         <div className="flex items-center gap-4">
           <SearchInput
-            value={filters.q}
             onChange={(value) => setFilter("q", value)}
-            placeholder="Search companies..."
+            placeholder="Search items..."
           />
           <Button
             onClick={() => {

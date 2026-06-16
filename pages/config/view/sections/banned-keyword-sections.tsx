@@ -44,21 +44,14 @@ export default function BannedKeywordsSection() {
   })
 
   const { filters, setFilter, handleSort, getQueryParams } = useFilters({
-    initialFilters: { q: "", sortBy: "keyword", sortOrder: "asc" },
+    initialFilters: {
+      q: "",
+      sortBy: "keyword",
+      sortOrder: "asc",
+    },
     paramMapping: { q: "search", sortBy: "sort_by", sortOrder: "sort_order" },
     resetPage: () => setPage(1),
   })
-
-  // const [searchQuery, setSearchQuery] = useState(filters.q as string)
-  // const debouncedSearch = useDebounce(searchQuery, 500)
-
-  // useEffect(() => {
-  //   setFilter("q", debouncedSearch)
-  // }, [debouncedSearch, setFilter])
-
-  // useEffect(() => {
-  //   setSearchQuery(filters.q as string)
-  // }, [filters.q])
 
   const {
     selectedRows,
@@ -175,9 +168,8 @@ export default function BannedKeywordsSection() {
         <h3 className="ml-1 self-end font-semibold">Banned Keywords</h3>
         <div className="flex items-center gap-4">
           <SearchInput
-            value={filters.q}
             onChange={(value) => setFilter("q", value)}
-            placeholder="Search keywords..."
+            placeholder="Search items..."
           />
           <Button
             onClick={() => {
