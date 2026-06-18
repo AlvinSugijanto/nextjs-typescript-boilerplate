@@ -63,10 +63,9 @@ export function useFilters<
 
   const setFilter = useCallback(
     (key: keyof T, value: NullableFilterValue) => {
-      console.log("this run")
       setFiltersState((prev) => ({ ...prev, [key]: value }))
       resetPage?.()
-      syncToUrl({ [key]: value, page: 0 })
+      // syncToUrl({ [key]: value, page: 0 })
     },
     [resetPage, syncToUrl]
   )
@@ -75,7 +74,7 @@ export function useFilters<
     (updates: Partial<T>) => {
       setFiltersState((prev) => ({ ...prev, ...updates }))
       resetPage?.()
-      syncToUrl({ ...updates, page: 0 })
+      // syncToUrl({ ...updates, page: 0 })
     },
     [resetPage, syncToUrl]
   )
@@ -89,7 +88,7 @@ export function useFilters<
       const updates = { sortBy: key, sortOrder: newDirection } as Partial<T>
       setFiltersState((prev) => ({ ...prev, ...updates }))
       resetPage?.()
-      syncToUrl({ sortBy: key, sortOrder: newDirection, page: 0 })
+      // syncToUrl({ sortBy: key, sortOrder: newDirection, page: 0 })
     },
     [filters, resetPage, syncToUrl]
   )
